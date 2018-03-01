@@ -8,7 +8,7 @@ const client = new elasticsearch.Client({
     host: { host, port }
 });
 
-async function checkConnection () {
+async function checkConnection() {
     let isConnected = false;
 
     while (!isConnected) {
@@ -23,11 +23,29 @@ async function checkConnection () {
     }
 }
 
-async function resetIndex () {
+/** Add book section schema mapping to ES */
+async function putBookMapping() {
+    const schema = {
+        title: { type: 'keyword' },
+        author: { type: 'keyword' },
+        location: { type: 'integer' },
+        text: { type: 'text' }
+    };
+
+    return client.indices.putMapping({ index, type, body: { properties: schema } });
+}
+
+
+async function resetIndex() {
     if (await client.indices.exists({ index })) {
-      await client.indices.delete({ index });
+        await client.indices.delete({ index });
     }
-  
+
     await client.indices.create({ index });
     await putBookMapping();
 }
+
+
+module.exports = {
+    client, index, type, checkConnection, resetIndex
+};
